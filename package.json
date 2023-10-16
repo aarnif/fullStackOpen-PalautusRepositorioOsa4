@@ -1,0 +1,21 @@
+{
+  "name": "blogilistasovellus",
+  "version": "1.0.0",
+  "description": "Helsingin yliopiston Full Stack Open-kurssin osan 4 tehtävien palautusta varten luotu repositorio.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^7.6.2"
+  }
+}
