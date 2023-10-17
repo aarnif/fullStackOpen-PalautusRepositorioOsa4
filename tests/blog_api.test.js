@@ -27,6 +27,11 @@ test("all blogs are returned", async () => {
   expect(response.body).toHaveLength(blogs.length);
 });
 
+test("blogs identification field is named 'id'", async () => {
+  const response = await api.get("/api/blogs");
+  expect(response.body[0]?.id).not.toBe(undefined);
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
