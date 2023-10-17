@@ -45,6 +45,20 @@ test("Add new blog to database", async () => {
   expect(updatedPosts.body).toHaveLength(allPosts.body.length + 1);
 });
 
+test("Add new blog without likes", async () => {
+  const newBlogContent = {
+    title: "Test Blog",
+    author: "Jane Doe",
+    url: "http://www.fakeblogaddress.com/post101",
+  };
+  await api.post("/api/blogs").send(newBlogContent);
+  const updatedPosts = await api.get("/api/blogs");
+  const findNewPost = updatedPosts.body.find(
+    (post) => post.title === newBlogContent.title
+  );
+  expect(findNewPost.likes).toBe(0);
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
