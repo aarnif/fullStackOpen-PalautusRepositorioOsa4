@@ -81,6 +81,24 @@ describe("add a single blog", () => {
   });
 });
 
+describe("delete a single blog", () => {
+  test("delete random blog from database", async () => {
+    const randomNumber = Math.floor(Math.random() * blogs.length);
+    const id = blogs[randomNumber]._id;
+    await api.delete(`/api/blogs/${id}`).expect(204);
+  });
+
+  test("try to delete blog with empty id", async () => {
+    const id = "";
+    await api.delete(`/api/blogs/${id}`).expect(404);
+  });
+
+  test("try to delete blog with non existing, but rightly formatted id", async () => {
+    const id = "5a422a851b54a676234d15r10";
+    await api.delete(`/api/blogs/${id}`).expect(400);
+  });
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
