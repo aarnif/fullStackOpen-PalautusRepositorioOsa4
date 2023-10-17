@@ -36,7 +36,7 @@ describe("view single blog", () => {
   });
 });
 
-describe("add a single blog", () => {
+describe("add single blog", () => {
   test("add new blog to database", async () => {
     const newBlogContent = {
       title: "Test Blog",
@@ -81,7 +81,7 @@ describe("add a single blog", () => {
   });
 });
 
-describe("delete a single blog", () => {
+describe("delete single blog", () => {
   test("delete random blog from database", async () => {
     const randomNumber = Math.floor(Math.random() * blogs.length);
     const id = blogs[randomNumber]._id;
@@ -96,6 +96,27 @@ describe("delete a single blog", () => {
   test("try to delete blog with non existing, but rightly formatted id", async () => {
     const id = "5a422a851b54a676234d15r10";
     await api.delete(`/api/blogs/${id}`).expect(400);
+  });
+});
+
+describe("update single blog", () => {
+  const updatedContent = {
+    likes: 1000,
+  };
+  test("update random blog from database", async () => {
+    const randomNumber = Math.floor(Math.random() * blogs.length);
+    const id = blogs[randomNumber]._id;
+    await api.put(`/api/blogs/${id}`).expect(200);
+  });
+
+  test("try to update blog with empty id", async () => {
+    const id = "";
+    await api.put(`/api/blogs/${id}`).send(updatedContent).expect(404);
+  });
+
+  test("try to update blog with non existing, but rightly formatted id", async () => {
+    const id = "5a422a851b54a676234d15r10";
+    await api.put(`/api/blogs/${id}`).send(updatedContent).expect(400);
   });
 });
 
