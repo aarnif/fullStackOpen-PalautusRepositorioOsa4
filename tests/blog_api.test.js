@@ -32,6 +32,19 @@ test("blogs identification field is named 'id'", async () => {
   expect(response.body[0]?.id).not.toBe(undefined);
 });
 
+test("Add new blog to database", async () => {
+  const newBlogContent = {
+    title: "Test Blog",
+    author: "John Doe",
+    url: "http://www.fakeblogaddress.com/post100",
+    likes: 20,
+  };
+  const allPosts = await api.get("/api/blogs");
+  await api.post("/api/blogs").send(newBlogContent);
+  const updatedPosts = await api.get("/api/blogs");
+  expect(updatedPosts.body).toHaveLength(allPosts.body.length + 1);
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });

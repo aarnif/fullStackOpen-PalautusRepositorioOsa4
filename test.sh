@@ -1,1 +1,0 @@
-npm test -- -t "blogs identification field is named 'id'"
