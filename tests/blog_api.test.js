@@ -59,6 +59,22 @@ test("Add new blog without likes", async () => {
   expect(findNewPost.likes).toBe(0);
 });
 
+test("Try to add new blog without title", async () => {
+  const newBlogContentNoTitle = {
+    author: "Jane Doe",
+    url: "http://www.fakeblogaddress.com/post101",
+  };
+  await api.post("/api/blogs").send(newBlogContentNoTitle).expect(400);
+});
+
+test("Try to add new blog without url", async () => {
+  const newBlogContentNoURL = {
+    title: "Test Blog",
+    author: "Jane Doe",
+  };
+  await api.post("/api/blogs").send(newBlogContentNoURL).expect(400);
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
