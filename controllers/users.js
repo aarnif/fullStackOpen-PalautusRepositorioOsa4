@@ -9,6 +9,12 @@ usersRouter.get("/", async (req, res) => {
 });
 
 usersRouter.post("/", async (req, res) => {
+  if (req.body.password.length < 3) {
+    const passwordError = new Error();
+    passwordError.name = "PasswordError";
+    throw passwordError;
+  }
+
   const hashedPassword = await bcrypt.hash(req.body.password, 10);
   const newUser = new User({
     name: req.body.name,
