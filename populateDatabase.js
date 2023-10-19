@@ -21,13 +21,17 @@ const addBlogs = async () => {
 const addUsers = async () => {
   await User.deleteMany({});
   const blogPostIds = blogs.map((blog) => blog._id);
+  const middle = Math.floor(blogPostIds.length / 2);
 
   for (let i = 0; i < users.length; ++i) {
     const hashPassword = await bcrypt.hash(users[i].password, 10);
     let userObject = new User({
       ...users[i],
       password: hashPassword,
-      blogs: i === 0 ? blogPostIds : [], // Add all the blogs to first user
+      blogs:
+        i === 0
+          ? blogPostIds.slice(0, middle)
+          : blogPostIds.slice(middle, blogPostIds.length), // Split blogposts between the two users
     });
     await userObject.save();
   }
