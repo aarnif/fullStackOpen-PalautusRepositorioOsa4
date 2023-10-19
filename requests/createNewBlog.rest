@@ -1,5 +1,6 @@
 POST http://localhost:3003/api/blogs
 Content-Type:  application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpvaG5EIiwiaWQiOiI2NTJmZTE0OTcyYjA4MTZmNzEyZDkyYzIiLCJpYXQiOjE2OTc3MTYwOTJ9.VGfpUVqNJUVY5WkSEvBc_0yZl4h0AY67OLzBFQeihf4
 
 {
   "title": "Express is awesome!",

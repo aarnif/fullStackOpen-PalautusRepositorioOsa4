@@ -23,6 +23,8 @@ const errorHandler = (error, req, res, next) => {
     return res.status(400).json({ error: "username is not valid!" });
   } else if (error.name === "WrongPasswordError") {
     return res.status(400).json({ error: "password is not valid!" });
+  } else if (error.name === "JsonWebTokenError") {
+    return res.status(400).json({ error: "token missing or invalid" });
   }
   next(error);
 };

@@ -1,6 +1,16 @@
+const jwt = require("jsonwebtoken");
 const blogsRouter = require("express").Router();
 const Blog = require("../models/blog");
+const User = require("../models/user");
 require("express-async-errors");
+
+const getTokenFrom = (req) => {
+  const authorization = req.get("authorization");
+  if (authorization && authorization.startsWith("Bearer ")) {
+    return authorization.replace("Bearer ", "");
+  }
+  return null;
+};
 
 blogsRouter.get("/", async (req, res) => {
   const allBlogs = await Blog.find({}).populate("user", {
@@ -11,6 +21,16 @@ blogsRouter.get("/", async (req, res) => {
 });
 
 blogsRouter.post("/", async (req, res) => {
+  const error = new Error();
+  const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET);
+
+  if (!decodedToken.id) {
+    error.name = "JsonWebTokenError";
+    throw error;
+  }
+
+  const user = await User.findById(decodedToken.id);
+
   const blog = new Blog({
     title: req.body.title,
     author: req.body.author,
@@ -23,7 +43,9 @@ blogsRouter.post("/", async (req, res) => {
     return res.status(400).end();
   }
 
-  await blog.save();
+  const saveBlog = await blog.save();
+  user.blogs = user.blogs.concat(saveBlog._id);
+  await user.save();
   res.status(201).json(blog);
 });
 
