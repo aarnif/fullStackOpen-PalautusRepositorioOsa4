@@ -1,4 +1,5 @@
 require("dotenv").config();
+const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const Blog = require("./models/blog");
 const User = require("./models/user");
@@ -21,7 +22,8 @@ const addUsers = async () => {
   await User.deleteMany({});
 
   for (let i = 0; i < users.length; ++i) {
-    let userObject = new User(users[i]);
+    const hashPassword = await bcrypt.hash(users[i].password, 10);
+    let userObject = new User({ ...users[i], password: hashPassword });
     await userObject.save();
   }
 };

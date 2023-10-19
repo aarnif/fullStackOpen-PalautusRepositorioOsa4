@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const { MONGODB_URI } = require("./utils/config");
 const blogsRouter = require("./controllers/blogs");
 const usersRouter = require("./controllers/users");
+const loginRouter = require("./controllers/login");
 const app = express();
 
 const errorHandler = (error, req, res, next) => {
@@ -18,6 +19,10 @@ const errorHandler = (error, req, res, next) => {
     return res
       .status(400)
       .json({ error: "password length must be at least 3 characters!" });
+  } else if (error.name === "UsernameError") {
+    return res.status(400).json({ error: "username is not valid!" });
+  } else if (error.name === "WrongPasswordError") {
+    return res.status(400).json({ error: "password is not valid!" });
   }
   next(error);
 };
@@ -48,6 +53,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/blogs", blogsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/login", loginRouter);
 app.use(errorHandler);
 
 module.exports = app;
