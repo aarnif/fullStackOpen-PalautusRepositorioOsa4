@@ -3,15 +3,26 @@ const Blog = require("../models/blog");
 require("express-async-errors");
 
 blogsRouter.get("/", async (req, res) => {
-  const allBlogs = await Blog.find({});
+  const allBlogs = await Blog.find({}).populate("user", {
+    name: 1,
+    username: 1,
+  });
   res.json(allBlogs);
 });
 
 blogsRouter.post("/", async (req, res) => {
-  const blog = new Blog(req.body);
+  const blog = new Blog({
+    title: req.body.title,
+    author: req.body.author,
+    user: req.body.user,
+    url: req.body.url,
+    likes: req.body.likes,
+  });
+
   if (!blog?.title || !blog?.url) {
     return res.status(400).end();
   }
+
   await blog.save();
   res.status(201).json(blog);
 });

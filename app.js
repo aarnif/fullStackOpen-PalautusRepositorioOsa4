@@ -40,6 +40,7 @@ const customLogFunc = (tokens, req, res) => {
 };
 
 const mongoUrl = MONGODB_URI;
+mongoose.set("strictQuery", false);
 mongoose.connect(mongoUrl);
 
 app.use(morgan(customLogFunc));
