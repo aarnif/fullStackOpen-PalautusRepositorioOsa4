@@ -2,15 +2,8 @@ const jwt = require("jsonwebtoken");
 const blogsRouter = require("express").Router();
 const Blog = require("../models/blog");
 const User = require("../models/user");
+const { SECRET } = require("../utils/config");
 require("express-async-errors");
-
-const getTokenFrom = (req) => {
-  const authorization = req.get("authorization");
-  if (authorization && authorization.startsWith("Bearer ")) {
-    return authorization.replace("Bearer ", "");
-  }
-  return null;
-};
 
 blogsRouter.get("/", async (req, res) => {
   const allBlogs = await Blog.find({}).populate("user", {
@@ -22,7 +15,7 @@ blogsRouter.get("/", async (req, res) => {
 
 blogsRouter.post("/", async (req, res) => {
   const error = new Error();
-  const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET);
+  const decodedToken = jwt.verify(req.token, SECRET);
 
   if (!decodedToken.id) {
     error.name = "JsonWebTokenError";
