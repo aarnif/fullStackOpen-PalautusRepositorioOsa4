@@ -3,6 +3,7 @@ const blogsRouter = require("express").Router();
 const Blog = require("../models/blog");
 const User = require("../models/user");
 const { SECRET } = require("../utils/config");
+const { userExtractor } = require("../middleware");
 require("express-async-errors");
 
 blogsRouter.get("/", async (req, res) => {
@@ -13,16 +14,8 @@ blogsRouter.get("/", async (req, res) => {
   res.json(allBlogs);
 });
 
-blogsRouter.post("/", async (req, res) => {
-  const error = new Error();
-  const decodedToken = jwt.verify(req.token, SECRET);
-
-  if (!decodedToken.id) {
-    error.name = "JsonWebTokenError";
-    throw error;
-  }
-
-  const user = await User.findById(decodedToken.id);
+blogsRouter.post("/", userExtractor, async (req, res) => {
+  const user = req.user;
 
   const blog = new Blog({
     title: req.body.title,
@@ -42,25 +35,19 @@ blogsRouter.post("/", async (req, res) => {
   res.status(201).json(blog);
 });
 
-blogsRouter.delete("/:id", async (req, res) => {
-  const error = new Error();
-  const decodedToken = jwt.verify(req.token, SECRET);
-
-  if (!decodedToken.id) {
-    error.name = "JsonWebTokenError";
-    throw error;
-  }
-
+blogsRouter.delete("/:id", userExtractor, async (req, res) => {
+  const user = req.user;
   const blog = await Blog.findById(req.params.id);
 
   if (blog === null) {
     return res.status(404).end();
   }
 
-  if (blog.user.toString() === decodedToken.id.toString()) {
+  if (blog.user.toString() === user.id.toString()) {
     await Blog.findByIdAndRemove(req.params.id);
     return res.status(204).end();
   } else {
+    const error = new Error();
     error.name = "UsernameError";
     throw error;
   }

@@ -1,3 +1,7 @@
+const jwt = require("jsonwebtoken");
+const User = require("./models/user");
+const { SECRET } = require("./utils/config");
+
 const errorHandler = (error, req, res, next) => {
   if (error.name === "CastError") {
     return res.status(400).json({ error: "invalid id!" });
@@ -46,10 +50,24 @@ const tokenExtractor = (req, res, next) => {
   next();
 };
 
+const userExtractor = async (req, res, next) => {
+  const error = new Error();
+  const decodedToken = jwt.verify(req.token, SECRET);
+
+  if (!decodedToken.id) {
+    error.name = "JsonWebTokenError";
+    throw error;
+  }
+
+  req.user = await User.findById(decodedToken.id);
+  next();
+};
+
 const middleware = {
   errorHandler: errorHandler,
   customLogFunc: customLogFunc,
   tokenExtractor: tokenExtractor,
+  userExtractor: userExtractor,
 };
 
 module.exports = middleware;
