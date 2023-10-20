@@ -5,6 +5,7 @@ const api = supertest(app);
 
 const Blog = require("../models/blog");
 const blogs = require("./blogs");
+let user = {};
 
 beforeEach(async () => {
   await Blog.deleteMany({});
@@ -13,6 +14,18 @@ beforeEach(async () => {
     let blogObject = new Blog(blogs[i]);
     await blogObject.save();
   }
+
+  userCredentials = {
+    username: "johnD",
+    password: "horsemeat",
+  };
+  // Log in
+  const response = await api
+    .post("/api/login")
+    .send(userCredentials)
+    .expect(200);
+
+  user = response.body;
 });
 
 describe("view all blogs", () => {
@@ -37,26 +50,33 @@ describe("view single blog", () => {
 });
 
 describe("add single blog", () => {
+  let newBlogContent = {
+    title: "Test Blog",
+    author: "John Doe",
+    url: "http://www.fakeblogaddress.com/post100",
+    likes: 20,
+  };
+
   test("add new blog to database", async () => {
-    const newBlogContent = {
-      title: "Test Blog",
-      author: "John Doe",
-      url: "http://www.fakeblogaddress.com/post100",
-      likes: 20,
-    };
     const allPosts = await api.get("/api/blogs");
-    await api.post("/api/blogs").send(newBlogContent);
+    await api
+      .post("/api/blogs")
+      .set("Authorization", "Bearer " + user.token)
+      .send(newBlogContent);
     const updatedPosts = await api.get("/api/blogs");
     expect(updatedPosts.body).toHaveLength(allPosts.body.length + 1);
   });
 
   test("add new blog without likes", async () => {
-    const newBlogContent = {
+    newBlogContent = {
       title: "Test Blog",
       author: "Jane Doe",
       url: "http://www.fakeblogaddress.com/post101",
     };
-    await api.post("/api/blogs").send(newBlogContent);
+    await api
+      .post("/api/blogs")
+      .set("Authorization", "Bearer " + user.token)
+      .send(newBlogContent);
     const updatedPosts = await api.get("/api/blogs");
     const findNewPost = updatedPosts.body.find(
       (post) => post.title === newBlogContent.title
@@ -65,58 +85,97 @@ describe("add single blog", () => {
   });
 
   test("try to add new blog without title", async () => {
-    const newBlogContentNoTitle = {
+    newBlogContent = {
       author: "Jane Doe",
       url: "http://www.fakeblogaddress.com/post101",
     };
-    await api.post("/api/blogs").send(newBlogContentNoTitle).expect(400);
+    await api
+      .post("/api/blogs")
+      .set("Authorization", "Bearer " + user.token)
+      .send(newBlogContent)
+      .expect(400);
   });
 
   test("try to add new blog without url", async () => {
-    const newBlogContentNoURL = {
+    newBlogContent = {
       title: "Test Blog",
       author: "Jane Doe",
     };
-    await api.post("/api/blogs").send(newBlogContentNoURL).expect(400);
+    await api
+      .post("/api/blogs")
+      .set("Authorization", "Bearer " + user.token)
+      .send(newBlogContent)
+      .expect(400);
+  });
+
+  test("try to add new blog without user token", async () => {
+    await api.post("/api/blogs").send(newBlogContent).expect(401);
   });
 });
 
 describe("delete single blog", () => {
+  // First three blogs matches with the given user credentials
+  const randomNumber = Math.floor(Math.random() * 2);
+  const id = blogs[randomNumber]._id;
   test("delete random blog from database", async () => {
-    const randomNumber = Math.floor(Math.random() * blogs.length);
-    const id = blogs[randomNumber]._id;
-    await api.delete(`/api/blogs/${id}`).expect(204);
+    await api
+      .delete(`/api/blogs/${id}`)
+      .set("Authorization", "Bearer " + user.token)
+      .expect(204);
   });
 
   test("try to delete blog with empty id", async () => {
     const id = "";
-    await api.delete(`/api/blogs/${id}`).expect(404);
+    await api
+      .delete(`/api/blogs/${id}`)
+      .set("Authorization", "Bearer " + user.token)
+      .expect(404);
   });
 
   test("try to delete blog with non existing, but rightly formatted id", async () => {
     const id = "5a422a851b54a676234d15r10";
-    await api.delete(`/api/blogs/${id}`).expect(400);
+    await api
+      .delete(`/api/blogs/${id}`)
+      .set("Authorization", "Bearer " + user.token)
+      .expect(400);
+  });
+
+  test("try to delete random blog without user token", async () => {
+    const id = "5a422a851b54a676234d15r10";
+    await api.delete(`/api/blogs/${id}`).expect(401);
   });
 });
 
 describe("update single blog", () => {
+  // First three blogs matches with the given user credentials
+  const randomNumber = Math.floor(Math.random() * 2);
+  const id = blogs[randomNumber]._id;
   const updatedContent = {
     likes: 1000,
   };
-  test("update random blog from database", async () => {
-    const randomNumber = Math.floor(Math.random() * blogs.length);
-    const id = blogs[randomNumber]._id;
-    await api.put(`/api/blogs/${id}`).expect(200);
+  test("update random blog with right user credentials from database", async () => {
+    await api
+      .put(`/api/blogs/${id}`)
+      .set("Authorization", "Bearer " + user.token)
+      .expect(200);
   });
 
   test("try to update blog with empty id", async () => {
     const id = "";
-    await api.put(`/api/blogs/${id}`).send(updatedContent).expect(404);
+    await api
+      .put(`/api/blogs/${id}`)
+      .set("Authorization", "Bearer " + user.token)
+      .send(updatedContent)
+      .expect(404);
   });
 
   test("try to update blog with non existing, but rightly formatted id", async () => {
     const id = "5a422a851b54a676234d15r10";
-    await api.put(`/api/blogs/${id}`).send(updatedContent).expect(400);
+    await api
+      .put(`/api/blogs/${id}`)
+      .set("Authorization", "Bearer " + user.token)
+      .send(updatedContent)
+      .expect(400);
   });
 });
 

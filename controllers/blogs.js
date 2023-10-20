@@ -53,23 +53,32 @@ blogsRouter.delete("/:id", userExtractor, async (req, res) => {
   }
 });
 
-blogsRouter.put("/:id", async (req, res, next) => {
+blogsRouter.put("/:id", userExtractor, async (req, res) => {
+  const user = req.user;
+  const blog = await Blog.findById(req.params.id);
+
+  if (blog === null) {
+    return res.status(404).end();
+  }
+
   const updatedBlogContent = {
     likes: req.body.likes,
   };
 
-  const updateBlog = await Blog.findByIdAndUpdate(
-    req.params.id,
-    updatedBlogContent,
-    {
-      new: true,
-    }
-  );
-
-  if (updateBlog === null) {
-    return res.status(404).end();
+  if (blog.user.toString() === user.id.toString()) {
+    const updateBlog = await Blog.findByIdAndUpdate(
+      req.params.id,
+      updatedBlogContent,
+      {
+        new: true,
+      }
+    );
+    res.status(200).send(updateBlog);
+  } else {
+    const error = new Error();
+    error.name = "UsernameError";
+    throw error;
   }
-  res.status(200).send(updateBlog);
 });
 
 module.exports = blogsRouter;

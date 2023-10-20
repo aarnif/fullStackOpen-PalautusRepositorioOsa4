@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const supertest = require("supertest");
 const app = require("../app");
 const api = supertest(app);
@@ -10,7 +11,12 @@ beforeEach(async () => {
   await User.deleteMany({});
 
   for (let i = 0; i < users.length; ++i) {
-    let userObject = new User(users[i]);
+    const hashPassword = await bcrypt.hash(users[i].password, 10);
+    let userObject = new User({
+      ...users[i],
+      password: hashPassword,
+      blogs: [],
+    });
     await userObject.save();
   }
 });
@@ -31,8 +37,8 @@ describe("view all users", () => {
 
 describe("add user operations", () => {
   const newUser = {
-    name: "Jane Doe",
-    username: "janeD",
+    name: "Jimmy Doolittle",
+    username: "jimmyD",
     password: "horsemeat",
   };
 

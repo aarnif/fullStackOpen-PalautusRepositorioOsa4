@@ -6,7 +6,12 @@ const { MONGODB_URI } = require("./utils/config");
 const blogsRouter = require("./controllers/blogs");
 const usersRouter = require("./controllers/users");
 const loginRouter = require("./controllers/login");
-const { customLogFunc, tokenExtractor, errorHandler } = require("./middleware");
+const {
+  customLogFunc,
+  tokenExtractor,
+  userExtractor,
+  errorHandler,
+} = require("./middleware");
 const app = express();
 
 const mongoUrl = MONGODB_URI;
